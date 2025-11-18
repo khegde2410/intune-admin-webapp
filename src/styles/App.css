@@ -1,0 +1,110 @@
+/* Global Styles */
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.main-content {
+  background-color: #f8f9fa;
+  min-height: calc(100vh - 56px);
+}
+
+/* Sidebar */
+.sidebar {
+  box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar-link {
+  color: #333;
+  padding: 12px 16px;
+  margin-bottom: 5px;
+  border-radius: 5px;
+  transition: all 0.3s;
+}
+
+.sidebar-link:hover {
+  background-color: #e9ecef;
+  color: #0d6efd;
+  text-decoration: none;
+}
+
+.sidebar-link.active {
+  background-color: #0d6efd;
+  color: white !important;
+}
+
+/* Feature Cards */
+.feature-card {
+  transition: transform 0.3s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.feature-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Table Improvements */
+table {
+  background-color: white;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  background-color: white;
+  z-index: 10;
+}
+
+/* Loading Spinner */
+.spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sidebar {
+    min-width: 100% !important;
+    min-height: auto !important;
+  }
+  
+  .main-content {
+    margin-left: 0 !important;
+  }
+}
+
+/* Utilities */
+.text-truncate-2 {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+
+/* Cards */
+.card {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  border: none;
+  margin-bottom: 20px;
+}
+
+.card-header {
+  background-color: white;
+  border-bottom: 2px solid #f0f0f0;
+  font-weight: 600;
+}
