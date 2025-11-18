@@ -8,7 +8,6 @@ A modern React-based web application for managing Microsoft Intune, Windows Auto
 
 - **Autopilot Management**: Upload hardware hashes via CSV and view registered devices with progress tracking
 - **Device Offboarding**: Remove devices from Intune, Autopilot, and Azure AD in the correct sequence
-- **Software Status**: Monitor application deployment and installation status across devices
 - **Secure Configuration**: Encrypted credential storage through in-app Settings page
 
 ## 📸 Screenshots
@@ -24,10 +23,6 @@ A modern React-based web application for managing Microsoft Intune, Windows Auto
 ### Device Offboarding
 ![Device Offboarding](docs/screenshots/device-offboarding.png)
 *Remove devices from Intune, Autopilot, and Azure AD*
-
-### Software Status
-![Software Status](docs/screenshots/software-status.png)
-*Monitor application deployment and installation status*
 
 ## 📋 Prerequisites
 
