@@ -70,3 +70,58 @@ A modern React-based web application for managing Microsoft Intune, Windows Auto
 6. Click "Save Configuration" (credentials are encrypted and stored securely in browser)
 
 **Note:** Client ID and Tenant ID are configured through the Settings page and stored encrypted in the browser. Never hardcode these values.
+
+## 🔍 Troubleshooting & Logs
+
+### Built-in Logging System
+
+The application includes a comprehensive logging system for troubleshooting operations:
+
+**Accessing Logs:**
+1. Navigate to **Settings** page
+2. Scroll down to **Application Logs & Troubleshooting** section
+3. View real-time logs with filtering options
+
+**Log Features:**
+- **5 Log Levels**: DEBUG, INFO, WARN, ERROR, SUCCESS
+- **Context Filtering**: Filter by Autopilot, Device, Authentication, Graph API
+- **Auto-refresh**: Enable to see logs update during operations
+- **Export Logs**: Download complete log history as text file
+- **Persistence**: Logs survive page refresh (stored in browser localStorage)
+
+**Common Issues:**
+
+**Azure AD Group Assignment Failing:**
+- **Symptom**: Device uploads successfully but group assignment fails with "Resource does not exist"
+- **Cause**: Device registered in Autopilot but not yet synced to Azure AD (can take 1-30 minutes)
+- **Solution**: The system automatically waits 5 minutes and retries 3 times. Check logs for:
+  ```
+  [Autopilot] Azure AD Sync: Waiting for device to appear...
+  [Autopilot] Group Assignment: Retry attempt 1/3
+  ```
+- **Manual Verification**: Check Azure Portal → Devices to confirm device has Azure AD Device ID
+
+**Permission Errors:**
+- **Symptom**: "Insufficient privileges" or "Forbidden" errors
+- **Solution**: Verify all required Graph API permissions have admin consent
+- **Required Scopes**:
+  - `DeviceManagementServiceConfig.ReadWrite.All` (Autopilot)
+  - `GroupMember.ReadWrite.All` (Group assignment)
+  - `Device.ReadWrite.All` (Azure AD devices)
+  - `Group.Read.All` (List groups)
+
+**Upload Workflow Timing:**
+```
+Phase 1: Upload to Autopilot (immediate)
+Phase 2: Registration polling (up to 4 minutes)
+Phase 3: Azure AD sync wait (up to 5 minutes)
+Phase 4: Group assignment with retries (up to 3 attempts, 30s/60s delays)
+Total possible time: ~10 minutes per device
+```
+
+**Debugging Tips:**
+1. Enable browser console (F12) to see detailed API responses
+2. Use log export feature to share with support
+3. Filter logs by ERROR level to focus on failures
+4. Check timestamps to identify timing-related issues
+5. Verify device appears in Azure Portal before group assignment

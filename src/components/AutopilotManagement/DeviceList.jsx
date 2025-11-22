@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Card, Table, Button, Badge, Spinner } from 'react-bootstrap';
+import { Card, Table, Button, Badge, Spinner, Alert } from 'react-bootstrap';
 import { useMsal } from '@azure/msal-react';
 import autopilotService from '../../services/autopilotService';
 import { graphScopes } from '../../utils/authConfig';
@@ -38,14 +38,14 @@ const DeviceList = ({ onRefresh }) => {
     }
   };
 
-  const handleDelete = async (deviceId) => {
-    if (!window.confirm('Are you sure you want to delete this device? This action cannot be undone.')) {
+  const handleDelete = async (deviceId, deviceSerial) => {
+    if (!window.confirm(`Are you sure you want to delete device ${deviceSerial}? This action cannot be undone.`)) {
       return;
     }
 
     setDeleting(deviceId);
     setError(''); // Clear previous errors
-    console.log('Attempting to delete device:', deviceId);
+    console.log('Attempting to delete device:', deviceId, deviceSerial);
     
     try {
       const response = await acquireTokenWithFallback(
@@ -56,23 +56,30 @@ const DeviceList = ({ onRefresh }) => {
       await autopilotService.deleteAutopilotDevice(response.accessToken, deviceId);
       console.log('Device deletion initiated:', deviceId);
       
-      // Poll for device removal (wait up to 30 seconds)
+      // Poll for device removal (wait up to 2 minutes)
       let attempts = 0;
-      const maxAttempts = 6; // 30 seconds (6 * 5 seconds)
+      const maxAttempts = 24; // 2 minutes (24 * 5 seconds)
       let deviceRemoved = false;
+      
+      console.log(`Waiting for device ${deviceSerial} to be removed from Autopilot...`);
       
       while (attempts < maxAttempts && !deviceRemoved) {
         await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
         attempts++;
+        
+        console.log(`Checking deletion status... (attempt ${attempts}/${maxAttempts}, ${attempts * 5}s elapsed)`);
         
         try {
           const devices = await autopilotService.getAutopilotDevices(response.accessToken);
           deviceRemoved = !devices.some(d => d.id === deviceId);
           
           if (deviceRemoved) {
-            console.log('Device successfully removed');
+            console.log(`✅ Device ${deviceSerial} successfully removed from Autopilot console`);
+            setError(`✅ Device ${deviceSerial} has been successfully deleted!`);
             await loadDevices();
             return;
+          } else {
+            console.log(`Device ${deviceSerial} still present, continuing to wait...`);
           }
         } catch (pollError) {
           console.error('Error polling for device removal:', pollError);
@@ -80,7 +87,8 @@ const DeviceList = ({ onRefresh }) => {
       }
       
       // If device not removed after polling, show info message
-      setError('Device deletion initiated. The device will be removed within 30 minutes. Please refresh to check status.');
+      console.warn(`⚠️ Timeout waiting for device ${deviceSerial} removal confirmation`);
+      setError(`⚠️ Device deletion initiated but not confirmed. It may take up to 30 minutes to complete. Please refresh the page periodically.`);
       await loadDevices();
       
     } catch (error) {
@@ -180,13 +188,13 @@ const DeviceList = ({ onRefresh }) => {
                         <Button 
                           variant="danger" 
                           size="sm"
-                          onClick={() => handleDelete(device.id)}
+                          onClick={() => handleDelete(device.id, device.serialNumber)}
                           disabled={deleting === device.id || deleting !== null}
                         >
                           {deleting === device.id ? (
                             <>
                               <Spinner animation="border" size="sm" className="me-1" />
-                              Deleting...
+                              Deleting & waiting...
                             </>
                           ) : 'Delete'}
                         </Button>

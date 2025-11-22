@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Form, Button, Alert, InputGroup } from 'react-bootstrap';
 import CryptoJS from 'crypto-js';
+import LogViewer from '../components/Troubleshooting/LogViewer';
 
 const Settings = () => {
   const [clientId, setClientId] = useState('');
@@ -9,6 +10,7 @@ const Settings = () => {
   const [error, setError] = useState('');
   const [showClientId, setShowClientId] = useState(false);
   const [showTenantId, setShowTenantId] = useState(false);
+  const [groupFilterPrefix, setGroupFilterPrefix] = useState('');
 
   // Encryption key (in production, this should be more secure)
   const ENCRYPTION_KEY = 'intune-admin-app-secret-key-2025';
@@ -51,6 +53,12 @@ const Settings = () => {
           setShowTenantId(false);
         }
       }
+
+      // Load group filter prefix (not encrypted, optional setting)
+      const savedPrefix = localStorage.getItem('autopilot_group_filter_prefix');
+      if (savedPrefix) {
+        setGroupFilterPrefix(savedPrefix);
+      }
     } catch (error) {
       console.error('Error loading settings:', error);
       setError('Failed to load settings');
@@ -85,6 +93,13 @@ const Settings = () => {
       localStorage.setItem('intune_client_id', encryptedClientId);
       localStorage.setItem('intune_tenant_id', encryptedTenantId);
 
+      // Save group filter prefix (optional)
+      if (groupFilterPrefix) {
+        localStorage.setItem('autopilot_group_filter_prefix', groupFilterPrefix);
+      } else {
+        localStorage.removeItem('autopilot_group_filter_prefix');
+      }
+
       setSaved(true);
       
       // Dispatch custom event for same-tab updates
@@ -106,8 +121,10 @@ const Settings = () => {
     if (window.confirm('Are you sure you want to clear all settings? This will sign you out.')) {
       localStorage.removeItem('intune_client_id');
       localStorage.removeItem('intune_tenant_id');
+      localStorage.removeItem('autopilot_group_filter_prefix');
       setClientId('');
       setTenantId('');
+      setGroupFilterPrefix('');
       setSaved(false);
       setError('');
       
@@ -248,6 +265,44 @@ const Settings = () => {
 
       <Card className="mt-4">
         <Card.Header>
+          <h5>Autopilot Group Settings (Optional)</h5>
+        </Card.Header>
+        <Card.Body>
+          <Alert variant="info">
+            <strong>ℹ️ Optional Configuration</strong>
+            <p className="mb-0 mt-2">
+              Configure a prefix filter for Azure AD groups that appear in the Autopilot hash upload dropdown.
+              Leave empty to show all groups.
+            </p>
+          </Alert>
+
+          <Form.Group className="mb-3">
+            <Form.Label>Group Name Filter Prefix</Form.Label>
+            <Form.Control
+              type="text"
+              placeholder="e.g., Autopilot, DEV-, PROD-"
+              value={groupFilterPrefix}
+              onChange={(e) => setGroupFilterPrefix(e.target.value)}
+            />
+            <Form.Text className="text-muted">
+              Only groups starting with this text will appear in the dropdown. Examples: "Autopilot", "DEV-", "PROD-Autopilot"
+            </Form.Text>
+          </Form.Group>
+
+          <Button variant="primary" onClick={handleSave}>
+            Save Group Filter
+          </Button>
+
+          {groupFilterPrefix && (
+            <Alert variant="success" className="mt-3 mb-0">
+              ✅ Current filter: Groups starting with "<strong>{groupFilterPrefix}</strong>" will be shown
+            </Alert>
+          )}
+        </Card.Body>
+      </Card>
+
+      <Card className="mt-4 mb-4">
+        <Card.Header>
           <h5>Security Information</h5>
         </Card.Header>
         <Card.Body>
@@ -266,6 +321,9 @@ const Settings = () => {
           </p>
         </Card.Body>
       </Card>
+
+      {/* Troubleshooting Logs */}
+      <LogViewer />
     </div>
   );
 };

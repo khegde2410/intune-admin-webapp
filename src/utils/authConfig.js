@@ -48,4 +48,6 @@ export const graphScopes = {
   deviceApps: ['https://graph.microsoft.com/DeviceManagementApps.Read.All'],
   devices: ['https://graph.microsoft.com/Device.ReadWrite.All'],
   directory: ['https://graph.microsoft.com/Directory.Read.All'],
+  azureAD: ['https://graph.microsoft.com/Device.ReadWrite.All'],
+  groups: ['https://graph.microsoft.com/Group.Read.All', 'https://graph.microsoft.com/GroupMember.ReadWrite.All'],
 };

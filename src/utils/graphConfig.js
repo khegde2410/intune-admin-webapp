@@ -24,4 +24,8 @@ export const endpoints = {
   
   // Users
   users: '/users',
+  
+  // Azure AD Groups
+  groups: '/groups',
+  groupMembers: (groupId) => `/groups/${groupId}/members`,
 };

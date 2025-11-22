@@ -65,6 +65,41 @@ class AutopilotService {
     );
   }
 
+  async getAzureADGroups(accessToken) {
+    // Get all Azure AD groups
+    return await graphService.callMsGraphWithPaging(
+      `${endpoints.groups}?$select=id,displayName,description&$orderby=displayName`,
+      accessToken
+    );
+  }
+
+  async addDeviceToGroup(accessToken, groupId, deviceId) {
+    // Add device to Azure AD group
+    const requestBody = {
+      '@odata.id': `https://graph.microsoft.com/v1.0/devices/${deviceId}`
+    };
+    
+    return await graphService.callMsGraph(
+      `${endpoints.groups}/${groupId}/members/$ref`,
+      accessToken,
+      'POST',
+      requestBody
+    );
+  }
+
+  async getDeviceBySerialNumber(accessToken, serialNumber) {
+    // Search for device in Azure AD by serial number
+    // Note: We search in Autopilot first, then get the Azure AD device ID
+    const autopilotDevices = await this.getAutopilotDevices(accessToken);
+    const device = autopilotDevices.find(d => d.serialNumber === serialNumber);
+    
+    if (device && device.azureActiveDirectoryDeviceId) {
+      return device.azureActiveDirectoryDeviceId;
+    }
+    
+    return null;
+  }
+
   async deleteImportedDevice(accessToken, deviceId) {
     return await graphService.callMsGraph(
       `${endpoints.importAutopilotDevices}/${deviceId}`,
